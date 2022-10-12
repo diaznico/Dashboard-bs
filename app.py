@@ -376,6 +376,150 @@ def getLatLonColor(selectedData):
 
 
 
+@app.callback(
+    Output('map-graph', 'figure'),
+    [
+        Input("bar-selector", "value"),
+        Input("location-dropdown", "value"),
+    ],
+)
+def update_figure(selectedData, selectedLocation):
+    """ GRAPHIC MAP
+    shows the map graph and updates depending on the selected city.
+    shows points of the levels depending on the selection.
+
+    Args:
+        selectedData (list): selected items dropwdown or histogram
+        selectedLocation (string): city name
+
+    Returns:
+        mapbox graph: grafico de mapa
+    """
+    zoom = 12.0
+    latInitial = -34.7509
+    lonInitial = -58.5846
+    bearing = 0
+
+    if selectedLocation:
+        zoom = 12.0
+        latInitial = list_of_locations[selectedLocation]["lat"]
+        lonInitial = list_of_locations[selectedLocation]["lon"]
+
+    
+    list_Coords = getLatLonColor(selectedData)
+
+    return go.Figure(
+        data=[
+            # Data of all the buildings according to the level.
+            go.Scattermapbox(
+                lat = list_Coords["y"],
+                lon = list_Coords["x"],
+                mode = "markers",
+                customdata = list_Coords[["BARRIO", "PADRON","DIF_PADRON","SUP_PARCEL", "PER_PARCEL"]],
+                hovertemplate = '<br>'.join([
+                    'BARRIO: %{customdata[0]}',
+                    'PADRON: %{customdata[1]}',
+                    'DIF EDIFICACIONES: %{customdata[2]}',
+                    'SUPERFICIE PARCELA: %{customdata[3]}',
+                    'PERIMETRO PARCELA: %{customdata[4]}',
+                ]),
+                hoverlabel = dict(namelength=0),
+                marker=dict(
+                    showscale=True,
+                    cmax = 23,
+                    cmin = 0,
+                    color = list_Coords["NIVELES"],
+                    opacity=0.5,
+                    size=5,
+                    colorscale=[
+                        [0, "#F4EC15"],
+                        [0.04167, "#DAF017"],
+                        [0.0833, "#BBEC19"],
+                        [0.125, "#9DE81B"],
+                        [0.1667, "#80E41D"],
+                        [0.2083, "#66E01F"],
+                        [0.25, "#4CDC20"],
+                        [0.292, "#34D822"],
+                        [0.333, "#24D249"],
+                        [0.375, "#25D042"],
+                        [0.4167, "#26CC58"],
+                        [0.4583, "#28C86D"],
+                        [0.50, "#29C481"],
+                        [0.54167, "#2AC093"],
+                        [0.5833, "#2BBCA4"],
+                        [1.0, "#613099"],
+
+                    ],
+                    colorbar=dict(
+                        title="niveles",
+                        x=0.93,
+                        xpad=0,
+                        nticks=24,
+                        tickfont=dict(color="#d8d8d8"),
+                        titlefont=dict(color="#d8d8d8"),
+                        thicknessmode="pixels",
+                    ),
+                ),
+            ),
+
+            go.Scattermapbox(
+                lat=[list_of_locations[i]["lat"] for i in list_of_locations],
+                lon=[list_of_locations[i]["lon"] for i in list_of_locations],
+                mode="markers",
+                hoverinfo="text",
+                text=[i for i in list_of_locations],
+                marker=dict(size=8, color="#ffa0a0"),
+            )
+        ],
+
+        layout = Layout(
+            autosize = True,
+            margin = go.layout.Margin(l=0, r=35, t=0, b=0),
+            showlegend = False,
+            mapbox = dict(
+                accesstoken = mapbox_access_token,
+                center = dict(lat=latInitial, lon=lonInitial),
+                style = "dark",
+                bearing = bearing,
+                zoom = zoom,
+            ),
+            updatemenus=[
+                dict(
+                    buttons=(
+                        [
+                            dict(
+                                args=[
+                                    {
+                                        "mapbox.zoom": 12,
+                                        "mapbox.center.lon": "-58.5846",
+                                        "mapbox.center.lat": "-34.7509",
+                                        "mapbox.bearing": 0,
+                                        "mapbox.style": "dark",
+                                    }
+                                ],
+                                label="Reset Zoom",
+                                method="relayout",
+                            )
+                        ]
+                    ),
+                    direction="left",
+                    pad={"r": 0, "t": 0, "b": 0, "l": 0},
+                    showactive=False,
+                    type="buttons",
+                    x=0.45,
+                    y=0.02,
+                    xanchor="left",
+                    yanchor="bottom",
+                    bgcolor="#323130",
+                    borderwidth=1,
+                    bordercolor="#6d6d6d",
+                    font=dict(color="#FFFFFF"),
+                )
+            ],
+        ),
+    )
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
