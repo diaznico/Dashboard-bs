@@ -1,15 +1,22 @@
 
 import pandas as pd
 from dash import Dash, dcc, html, Input, Output
+from plotly import graph_objs as go
+from plotly.graph_objs import *
+import plotly.express as px
+import numpy as np
 
 # public access mapbox token.
 mapbox_access_token = ""
 
 # database csv.
 df = pd.read_csv("data.csv")
+# agrupo los niveles y las cantidades de elementos en cada nivel.
+df_niveles = df.groupby(['NIVELES']).size().reset_index(name = "cantidad")
 
 app = Dash(__name__)
 app.title = "Data"
+app._favicon = ("assets\favicon.ico")
 server = app.server
 
 # BARRIOS LA MATANZA 
@@ -124,6 +131,125 @@ app.layout = html.Div(
 )
 
 
+############ -> HISTOGRAM FUNCTIONS AND CALLBACKS <- ############
+
+def get_selection(selection):
+    """ colors histogram bars and highlights selected elements white
+
+    Args:
+        selection (list): list of selected items
+
+    Returns:
+        array: returns an np.array ([1,2,3])
+    """
+    xSelected = []
+    colorVal = [
+        "#F4EC15",
+        "#DAF017",
+        "#BBEC19",
+        "#9DE81B",
+        "#80E41D",
+        "#66E01F",
+        "#4CDC20",
+        "#34D822",
+        "#24D249",
+        "#25D042",
+        "#26CC58",
+        "#28C86D",
+        "#29C481",
+        "#2AC093",
+        "#2BBCA4",
+        "#2BB5B8",
+        "#2C99B4",
+        "#2D7EB0",
+        "#2D65AC",
+        "#2E4EA4",
+        "#2E38A4",
+        "#3B2FA0",
+        "#4E2F9C",
+        "#603099",
+    ]
+
+    # Put the selected levels into a list of xSelected numbers
+    xSelected.extend([int(x) for x in selection])
+
+    for i in range(24):
+        # If the bar is selected, color it white
+        if i in xSelected and len(xSelected) < 24:
+            colorVal[i] = "#FFFFFF"
+    return np.array(colorVal)
+
+
+@app.callback(
+    Output("histogram", "figure"), 
+    [
+        Input("location-dropdown", "value"),
+        Input("bar-selector", "value")
+    ])
+
+def update_bar_chart(nombre_barrio, seleccion):
+    """ histogram graph
+        update histogram according to the city
+
+    Args:
+        nombre_barrio (string): city ​​name
+        seleccion (list): selected items dropwdown
+
+    Returns:
+        graph : graph histogram
+    """
+    
+    df_filtrado_barrios = df[df['BARRIO'] == nombre_barrio]
+    df_niveles = df_filtrado_barrios.groupby(['NIVELES']).size().reset_index(name = "cantidad")
+
+    colorVal = get_selection(seleccion)
+    
+    layout = go.Layout(
+        bargap=0.01,
+        bargroupgap=0,
+        barmode="group",
+        margin=go.layout.Margin(l=10, r=0, t=0, b=50),
+        showlegend=False,
+        plot_bgcolor="#323130",
+        paper_bgcolor="#323130",
+        dragmode="select",
+        font=dict(color="white"),
+        xaxis=dict(
+            range=[-0.5, 23.5],
+            showgrid=False,
+            nticks=25,
+            fixedrange=True,
+        ),
+        yaxis=dict(
+            showticklabels=False,
+            showgrid=False,
+            fixedrange=True,
+            rangemode="nonnegative",
+            zeroline=False,
+        ),
+    )
+
+    return go.Figure(
+        data=[
+            go.Bar(
+                x = df_niveles["NIVELES"], 
+                y = df_niveles["cantidad"], 
+                marker=dict(color=colorVal), 
+                hoverinfo="y", 
+                text = df_niveles["cantidad"],
+                textposition="outside",
+            ),
+            
+            go.Scatter(
+                opacity=0,
+                hoverinfo="all",
+                mode="markers",
+                marker=dict(color="rgb(66, 134, 244, 0)", symbol="square", size=40),
+                visible=True,
+            ),
+        ],
+        layout=layout,
+    )
 
 if __name__ == '__main__':
     app.run_server(debug=True)
