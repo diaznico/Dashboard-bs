@@ -26,7 +26,20 @@ app.layout = html.Div(children=[
         placeholder = "Seleccione Nivel"
     ),
 
-    dcc.Graph(id="histogram"),
+    # Columna para gráficos y diagramas de aplicaciones
+    html.Div(
+        className="eight columns div-for-charts bg-grey",
+        children=[
+            dcc.Graph(id="map-graph"),
+            html.Div(
+                className="text-padding",
+                children=[
+                    "histograma."
+                ],
+            ),
+            dcc.Graph(id="histogram"),
+        ],
+    ),
 ])
 
 
