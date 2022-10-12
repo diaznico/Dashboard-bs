@@ -353,6 +353,30 @@ def update_bar_chart(nombre_barrio, seleccion):
         layout=layout,
     )
 
+
+############ -> FUNCTIONS AND MAP CALLBACKS <- ############
+
+def getLatLonColor(selectedData):
+    """ get the coordinates of the selected elements.
+        if no items selected show all
+
+    Args:
+        selectedData (list): selected items dropwdown
+
+    Returns:
+        DataFrame : df of data matching the level
+    """
+    listCoords = df
+
+    if selectedData == None or len(selectedData) == 0:
+        return listCoords
+    else:
+        list_leveles = df[df["NIVELES"].isin(selectedData)]
+        return list_leveles
+
+
+
+
 if __name__ == '__main__':
     app.run_server(debug=True)
 
