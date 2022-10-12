@@ -207,6 +207,36 @@ def update_bar_selector(value, clickData):
     return list(set(holder))
 
 
+@app.callback(Output("histogram", "selectedData"), [Input("histogram", "clickData")])
+def update_selected_data(clickData):
+    """ Clear selected data if click data is used
+
+    Args:
+        clickData (list): selected list
+
+    Returns:
+        list : empty list
+    """
+    if clickData:
+        return {"points": []}
+
+
+@app.callback(Output("total-rides", "children"), [Input("location-dropdown", "value")])
+
+def update_total_rides(value):
+    """ Update the total number of buildings in the Label
+
+    Args:
+        value (string): name of the city
+
+    Returns:
+        int: number of buildings in that city
+    """
+    cantidad = len(df[df["BARRIO"] == value].index)
+    return "TOTAL DE PARCELAS: {0}".format(cantidad)
+
+
+
 @app.callback(
     Output("histogram", "figure"), 
     [
