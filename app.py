@@ -181,6 +181,33 @@ def get_selection(selection):
 
 
 @app.callback(
+    Output("bar-selector", "value"),
+    [Input("histogram", "selectedData"), Input("histogram", "clickData")],
+)
+def update_bar_selector(value, clickData):
+    """ histogram data update dropdown values
+
+    Args:
+        value (list): multiple selection on histogram
+        clickData (list): histogram click data
+
+    Returns:
+        list: list without order or indices
+    """
+    holder = []
+    if clickData:
+        holder.append(str(int(clickData["points"][0]["x"])))
+    if value:
+        for x in value["points"]:
+            holder.append(str(int(x["x"])))
+
+    for index in range(len(holder)):
+        holder[index] = int(holder[index])
+
+    return list(set(holder))
+
+
+@app.callback(
     Output("histogram", "figure"), 
     [
         Input("location-dropdown", "value"),
