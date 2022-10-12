@@ -236,6 +236,51 @@ def update_total_rides(value):
     return "TOTAL DE PARCELAS: {0}".format(cantidad)
 
 
+def update_total_rides_selection(location, selection):
+    """ update building labels
+
+    Args:
+        location (string): selected city
+        selection (list): selected levels
+
+    Returns:
+        string: number of items selected overall
+    """
+    firstOutput = ""
+
+    if selection != None or len(selection) != 0:
+        totalInSelection = 0
+        for x in selection:
+            totalInSelection += len(df[df["NIVELES"] == x].index)
+
+        firstOutput = "Total de elementos seleccionados: {0}".format(totalInSelection)
+
+    if (
+        location == None
+        or selection == None
+        or len(selection) == 24
+        or len(selection) == 0
+    ):
+        return firstOutput, (location, " - Mostrando Nivel: All")
+
+    holder = sorted([int(x) for x in selection])
+
+    if holder == list(range(min(holder), max(holder) + 1)):
+        return (
+            firstOutput,
+            (
+                location,
+                " - Mostrando Nivel: ",
+                holder[0],
+                "-",
+                holder[len(holder) - 1],
+            ),
+        )
+
+    holder_to_string = ", ".join(str(x) for x in holder)
+    return firstOutput, (location, " - Mostrando Nivel: ", holder_to_string)
+
+
 
 @app.callback(
     Output("histogram", "figure"), 
