@@ -520,6 +520,43 @@ def update_figure(selectedData, selectedLocation):
     )
 
 
+lista_clicks = []
+
+@app.callback(
+    Output("download-dataframe-csv", "data"),
+    [
+        Input("btn_csv", "n_clicks"),
+        Input("bar-selector", "value"),
+        Input("location-dropdown", "value"),
+    ],
+    prevent_initial_call=True,
+)
+def func(n_clicks, select_Level, select_Location):
+    """ button to download csv
+
+    Args:
+        n_clicks (list): list of times the button is pressed incrementing by 1
+        select_Level (list): selected items dropwdown or histogram
+        select_Location (string): city name
+
+    Returns:
+        dcc.send_data_frame: For downloading dataframes.
+    """
+    df_selected_Location = df[df['BARRIO'] == select_Location]
+
+    lista_clicks.append(n_clicks)
+    
+    for index in range(len(lista_clicks)-1):
+        if lista_clicks[index + 1] > lista_clicks[index]:
+            lista_clicks.clear()
+            if select_Level == []:
+                return dcc.send_data_frame(df_selected_Location.to_csv, "GenMap.csv")
+
+            else: 
+                df_levels= df_selected_Location[df_selected_Location["NIVELES"].isin(select_Level)]
+                return dcc.send_data_frame(df_levels.to_csv, "GenMap.csv")
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
